@@ -1,31 +1,24 @@
 {
   "name": "pioneer-studies-addon-utils",
-  "description": "A utility library for Pioneer studies",
   "version": "1.0.0",
-  "maintainers": [
-    {
-      "name": "Rehan Dalal",
-      "email": "rdalal@mozilla.com"
-    }
-  ],
-  "repositories": [
-    {
-      "type": "git",
-      "url": "https://github.com/mozilla/pioneer-studies-addon-utils.git"
-    }
-  ],
-  "licenses": [
-    {
-      "name": "MPL 2.0",
-      "url": "https://github.com/mozilla/pioneer-studies-addon-utils/blob/master/LICENSE"
-    }
-  ],
+  "description": "A utility library for Pioneer studies",
+  "dependencies": {},
+  "devDependencies": {
+    "jose-jwe-jws": "0.1.5",
+    "webpack": "3.7.1"
+  },
   "scripts": {
     "build": "webpack",
     "prepublishOnly": "npm run build"
   },
-  "devDependencies": {
-    "jose-jwe-jws": "0.1.5",
-    "webpack": "3.7.1"
-  }
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mozilla/pioneer-studies-addon-utils.git"
+  },
+  "author": "Rehan Dalal",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/mozilla/pioneer-studies-addon-utils/issues"
+  },
+  "homepage": "https://github.com/mozilla/pioneer-studies-addon-utils#readme"
 }
