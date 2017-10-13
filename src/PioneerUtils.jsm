@@ -9,11 +9,8 @@ const { generateUUID } = Cc["@mozilla.org/uuid-generator;1"].getService(Ci.nsIUU
 
 import { setCrypto, Jose, JoseJWE } from "jose-jwe-jws/dist/jose-commonjs.js";
 
-// The public key used for encryption
-const PUBLIC_KEY = require("./public_key.json");
-
-// The encryption key ID from the server
-const ENCRYPTION_KEY_ID = "pioneer-20170905";
+// The public keys used for encryption
+const PUBLIC_KEYS = require("./public_keys.json");
 
 const PIONEER_ID_PREF = "extensions.pioneer.cachedClientID";
 
@@ -27,9 +24,15 @@ class PioneerUtils {
     this.encrypter = null;
   }
 
+  getPublicKey() {
+    const env = this.config.pioneerEnv || "prod";
+    return PUBLIC_KEYS[env];
+  }
+
   setupEncrypter() {
     if (this.encrypter === null) {
-      const rsa_key = Jose.Utils.importRsaPublicKey(PUBLIC_KEY, "RSA-OAEP");
+      const pk = this.getPublicKey();
+      const rsa_key = Jose.Utils.importRsaPublicKey(pk.key, "RSA-OAEP");
       const cryptographer = new Jose.WebCryptographer();
       this.encrypter = new JoseJWE.Encrypter(cryptographer, rsa_key);
     }
@@ -53,9 +56,11 @@ class PioneerUtils {
   }
 
   async submitEncryptedPing(data) {
+    const pk = this.getPublicKey();
+
     const payload = {
       encryptedData: await this.encryptData(JSON.stringify(data)),
-      encryptionKeyId: ENCRYPTION_KEY_ID,
+      encryptionKeyId: key.id,
       pioneerId: this.getPioneerId(),
       studyName: this.config.studyName,
       studyVersion: this.config.studyVersion,
