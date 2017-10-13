@@ -60,7 +60,7 @@ class PioneerUtils {
 
     const payload = {
       encryptedData: await this.encryptData(JSON.stringify(data)),
-      encryptionKeyId: key.id,
+      encryptionKeyId: pk.id,
       pioneerId: this.getPioneerId(),
       studyName: this.config.studyName,
       studyVersion: this.config.studyVersion,
