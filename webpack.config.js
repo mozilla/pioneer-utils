@@ -1,5 +1,5 @@
 /* eslint-env node */
-var path = require("path");
+const path = require("path");
 
 module.exports = {
   context: __dirname,
@@ -7,7 +7,8 @@ module.exports = {
     PioneerUtils: "./src/PioneerUtils.jsm",
   },
   output: {
-    path: path.resolve(__dirname, "dist/"),
+    path: path.resolve(__dirname, "dist"),
     filename: "[name].jsm",
+    libraryTarget: "this",
   },
 };

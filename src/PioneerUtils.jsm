@@ -7,8 +7,7 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 const { TelemetryController } = Cu.import("resource://gre/modules/TelemetryController.jsm", null);
 const { generateUUID } = Cc["@mozilla.org/uuid-generator;1"].getService(Ci.nsIUUIDGenerator);
 
-Cu.importGlobalProperties(["crypto"]);  // Crypto is not available by default
-import { Jose, JoseJWE } from "jose-jwe-jws/dist/jose-commonjs.js";
+import { setCrypto, Jose, JoseJWE } from "jose-jwe-jws/dist/jose-commonjs.js";
 
 // The public key used for encryption
 const PUBLIC_KEY = require("./public_key.json");
@@ -18,6 +17,9 @@ const ENCRYPTION_KEY_ID = "pioneer-20170905";
 
 const PIONEER_ID_PREF = "extensions.pioneer.cachedClientID";
 
+// Make crypto available and make jose use it.
+Components.utils.importGlobalProperties(["crypto"]);
+setCrypto(crypto);
 
 class PioneerUtils {
   constructor(config) {
@@ -45,7 +47,7 @@ class PioneerUtils {
     return id;
   }
 
-  async encryptData() {
+  async encryptData(data) {
     this.setupEncrypter();
     return await this.encrypter.encrypt(data);
   }
@@ -68,4 +70,5 @@ class PioneerUtils {
   }
 }
 
+this.PioneerUtils = PioneerUtils;
 this.EXPORTED_SYMBOLS = ["PioneerUtils"];
