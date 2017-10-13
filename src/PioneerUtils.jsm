@@ -7,7 +7,8 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 const { TelemetryController } = Cu.import("resource://gre/modules/TelemetryController.jsm", null);
 const { generateUUID } = Cc["@mozilla.org/uuid-generator;1"].getService(Ci.nsIUUIDGenerator);
 
-import { setCrypto, Jose, JoseJWE } from "jose-jwe-jws/dist/jose-commonjs.js";
+import { setCrypto as Jose_SetCrypto, Jose, JoseJWE } from "jose-jwe-jws/dist/jose-commonjs.js";
+import sampling from "./sampling.js";
 
 // The public keys used for encryption
 const PUBLIC_KEYS = require("./public_keys.json");
@@ -16,7 +17,36 @@ const PIONEER_ID_PREF = "extensions.pioneer.cachedClientID";
 
 // Make crypto available and make jose use it.
 Cu.importGlobalProperties(["crypto"]);
-setCrypto(crypto);
+Jose_setCrypto(crypto);
+
+/**
+ * @typedef {Object} PioneerUtilsConfig
+ * @property {String} studyName
+ *   Unique name of the study.
+ *
+ * @property {String} studyVersion
+ *   Version of the study. Should match contents of install.rdf.
+ *
+ * @property {String?} pioneerEnv
+ *   Optional. Which telemetry environment to send data to. Should be
+ *   either "prod" or "stage". Defaults to "prod".
+ *
+ * @property {Object} branches
+ *   Array of branches objects. If useful, you may store extra data on
+ *   each branch. It will be included when choosing a branch.
+ *
+ *   Example:
+ *     [
+ *       { name: "control", weight: 1 },
+ *       { name: "variation1", weight: 2 },
+ *       { name: "variation2", weight: 2 },
+ *     ]
+ *
+ * @property {String} branches[].name
+ *
+ * @property {Number} branches[].weight
+ *   Optional, defaults to 1.
+ */
 
 class PioneerUtils {
   constructor(config) {
@@ -72,6 +102,20 @@ class PioneerUtils {
     };
 
     return TelemetryController.submitExternalPing("pioneer-study", payload, telOptions);
+  }
+
+  /**
+   * Chooses a branch from among `config.branches`. This is a
+   * deterministic function of `config.studyName` and the user's
+   * pioneerId. As long as neither of those change, it will always
+   * return the same value.
+   *
+   * @returns {Object}
+   *   An object from `config.branches`, chosen based on a `weight` key.
+   */
+  async chooseBranch() {
+    const hashKey = `${this.config.studyName}/${await this.getPioneerId()}`;
+    return sampling.chooseWeighted(this.config.branches, hashKey);
   }
 }
 
