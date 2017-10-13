@@ -21,7 +21,8 @@
     }
   ],
   "scripts": {
-    "build": "webpack"
+    "build": "webpack",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "jose-jwe-jws": "0.1.5",
