@@ -7,7 +7,7 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 const { TelemetryController } = Cu.import("resource://gre/modules/TelemetryController.jsm", null);
 const { generateUUID } = Cc["@mozilla.org/uuid-generator;1"].getService(Ci.nsIUUIDGenerator);
 
-import { setCrypto as Jose_SetCrypto, Jose, JoseJWE } from "jose-jwe-jws/dist/jose-commonjs.js";
+import { setCrypto as joseSetCrypto, Jose, JoseJWE } from "jose-jwe-jws/dist/jose-commonjs.js";
 import sampling from "./sampling.js";
 
 // The public keys used for encryption
@@ -17,7 +17,7 @@ const PIONEER_ID_PREF = "extensions.pioneer.cachedClientID";
 
 // Make crypto available and make jose use it.
 Cu.importGlobalProperties(["crypto"]);
-Jose_setCrypto(crypto);
+joseSetCrypto(crypto);
 
 /**
  * @typedef {Object} PioneerUtilsConfig
