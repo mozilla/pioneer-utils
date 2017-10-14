@@ -22,7 +22,7 @@ Cu.importGlobalProperties(["crypto"]);
 joseSetCrypto(crypto);
 
 /**
- * @typedef {Object} PioneerUtilsConfig
+ * @typedef {Object} Config
  * @property {String} studyName
  *   Unique name of the study.
  *
@@ -32,7 +32,7 @@ joseSetCrypto(crypto);
  *
  * @property {String?} pioneerEnv
  *   Optional. Which telemetry environment to send data to. Should be
- *   either "prod" or "stage". Defaults to "prod".
+ *   either ``"prod"`` or ``"stage"``. Defaults to ``"prod"``.
  *
  * @property {Object} branches
  *   Array of branches objects. If useful, you may store extra data on
@@ -46,22 +46,29 @@ joseSetCrypto(crypto);
  *     ]
  *
  * @property {String} branches[].name
+ *   The name of the branch.
  *
  * @property {Number} branches[].weight
  *   Optional, defaults to 1.
  */
 
-class PioneerUtils {
+/**
+ * Utilities for making Pioneer Studies.
+ * @param {Config} config
+ */
+export class PioneerUtils {
   constructor(config) {
     this.config = config;
     this.encrypter = null;
   }
 
+  /** */
   getPublicKey() {
     const env = this.config.pioneerEnv || "prod";
     return PUBLIC_KEYS[env];
   }
 
+  /** */
   setupEncrypter() {
     if (this.encrypter === null) {
       const pk = this.getPublicKey();
@@ -71,6 +78,7 @@ class PioneerUtils {
     }
   }
 
+  /** */
   getPioneerId() {
     let id = Services.prefs.getCharPref(PIONEER_ID_PREF, "");
 
@@ -95,6 +103,7 @@ class PioneerUtils {
     return addon !== null && addon.isActive;
   }
 
+  /** @private */
   async encryptData(data) {
     this.setupEncrypter();
     return await this.encrypter.encrypt(data);
