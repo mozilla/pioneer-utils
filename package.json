@@ -5,6 +5,7 @@
   "dependencies": {},
   "devDependencies": {
     "jose-jwe-jws": "0.1.6",
+    "jsdoc": "^3.5.5",
     "webpack": "3.7.1"
   },
   "scripts": {
@@ -15,7 +16,7 @@
     "type": "git",
     "url": "git+https://github.com/mozilla/pioneer-studies-addon-utils.git"
   },
-  "author": "Rehan Dalal",
+  "author": "Mozilla",
   "license": "MPL-2.0",
   "bugs": {
     "url": "https://github.com/mozilla/pioneer-studies-addon-utils/issues"
