@@ -4,7 +4,7 @@
   "description": "A utility library for Pioneer studies",
   "dependencies": {},
   "devDependencies": {
-    "jose-jwe-jws": "git+https://github.com/square/js-jose.git",
+    "jose-jwe-jws": "0.1.6",
     "webpack": "3.7.1"
   },
   "scripts": {
