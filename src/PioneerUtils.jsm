@@ -1,8 +1,10 @@
 "use strict";
 
 const { classes: Cc, interfaces: Ci, utils: Cu } = Components;
-Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+
+XPCOMUtils.defineLazyModuleGetter(this, "AddonManager", "resource://gre/modules/AddonManager.jsm");
+XPCOMUtils.defineLazyModuleGetter(this, "Services", "resource://gre/modules/Services.jsm");
 
 const { TelemetryController } = Cu.import("resource://gre/modules/TelemetryController.jsm", null);
 const { generateUUID } = Cc["@mozilla.org/uuid-generator;1"].getService(Ci.nsIUUIDGenerator);
@@ -48,6 +50,11 @@ class PioneerUtils {
     }
 
     return id;
+  }
+
+  async isUserOptedIn() {
+    const addon = await AddonManager.getAddonByID("pioneer-opt-in@mozilla.org");
+    return addon !== null;
   }
 
   async encryptData(data) {
