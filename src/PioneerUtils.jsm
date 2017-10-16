@@ -24,8 +24,9 @@ joseSetCrypto(crypto);
  * @property {String} studyName
  *   Unique name of the study.
  *
- * @property {String} studyVersion
- *   Version of the study. Should match contents of install.rdf.
+ * @property {Number} schemaVersion
+ *   Version of the schema to use for encrypted data. Should be an
+ *   integer.
  *
  * @property {String?} pioneerEnv
  *   Optional. Which telemetry environment to send data to. Should be
@@ -93,7 +94,7 @@ class PioneerUtils {
       encryptionKeyId: pk.id,
       pioneerId: this.getPioneerId(),
       studyName: this.config.studyName,
-      studyVersion: this.config.studyVersion,
+      studyVersion: this.config.schemaVersion,
     };
 
     const telOptions = {
