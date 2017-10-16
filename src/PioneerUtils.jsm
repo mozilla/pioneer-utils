@@ -54,7 +54,7 @@ class PioneerUtils {
 
   async isUserOptedIn() {
     const addon = await AddonManager.getAddonByID("pioneer-opt-in@mozilla.org");
-    return addon !== null;
+    return addon !== null && addon.isActive;
   }
 
   async encryptData(data) {
