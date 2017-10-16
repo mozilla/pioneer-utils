@@ -1,8 +1,10 @@
 "use strict";
 
 const { classes: Cc, interfaces: Ci, utils: Cu } = Components;
-Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+
+XPCOMUtils.defineLazyModuleGetter(this, "AddonManager", "resource://gre/modules/AddonManager.jsm");
+XPCOMUtils.defineLazyModuleGetter(this, "Services", "resource://gre/modules/Services.jsm");
 
 const { TelemetryController } = Cu.import("resource://gre/modules/TelemetryController.jsm", null);
 const { generateUUID } = Cc["@mozilla.org/uuid-generator;1"].getService(Ci.nsIUUIDGenerator);
@@ -81,11 +83,33 @@ class PioneerUtils {
     return id;
   }
 
+  /**
+   * Checks to see if the user has opted in to Pioneer. This is
+   * done by checking that the opt-in addon is installed and active.
+   *
+   * @returns {Boolean}
+   *   A boolean to indicate opt-in status.
+   */
+  async isUserOptedIn() {
+    const addon = await AddonManager.getAddonByID("pioneer-opt-in@mozilla.org");
+    return addon !== null && addon.isActive;
+  }
+
   async encryptData(data) {
     this.setupEncrypter();
     return await this.encrypter.encrypt(data);
   }
 
+  /**
+   * Encrypts the given data and submits a properly formatted
+   * Pioneer ping to Telemetry.
+   *
+   * @param {Object} data
+   *   A object containing data to be encrypted and submitted.
+   *
+   * @returns {String}
+   *   The ID of the ping that was submitted
+   */
   async submitEncryptedPing(data) {
     const pk = this.getPublicKey();
 
