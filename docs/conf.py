@@ -42,7 +42,7 @@ with open('../package.json') as package_file:
     # General information about the project.
     project = package_info['name'].replace('-', ' ')
     author = package_info['author']
-    copyright = f'2017, {author}'
+    copyright = '2017, {}'.format(author)
 
     # The version info for the project you're documenting, acts as
     # replacement for |version| and |release|, also used in various
