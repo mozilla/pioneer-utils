@@ -1,6 +1,6 @@
 {
-  "name": "pioneer-studies-addon-utils",
-  "version": "1.0.1",
+  "name": "pioneer-utils",
+  "version": "1.0.2",
   "description": "A utility library for Pioneer studies",
   "dependencies": {},
   "devDependencies": {
