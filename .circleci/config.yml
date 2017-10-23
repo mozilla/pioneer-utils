@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/node:7
+      - image: circleci/node:8
 
     working_directory: ~/repo
 
@@ -17,6 +17,8 @@ jobs:
           - v1-dependencies-
 
       - run: npm install
+
+      - run: npm run lint
 
       - save_cache:
           paths:
