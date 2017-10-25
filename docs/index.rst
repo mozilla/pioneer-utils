@@ -18,3 +18,4 @@ Documentation
 
    getting_started
    api_reference
+   development

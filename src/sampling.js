@@ -49,7 +49,7 @@ export async function hashFraction(input) {
 }
 
 /**
- * @param {string} input
+ * @param {string} message
  * @returns {string} Hex encoded sha256 hash.
  */
 export async function sha256(message) {

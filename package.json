@@ -4,13 +4,20 @@
   "description": "A utility library for Pioneer studies",
   "dependencies": {},
   "devDependencies": {
+    "escope": "^3.6.0",
+    "eslint": "^4.9.0",
+    "eslint-plugin-mozilla": "^0.4.5",
+    "eslint-plugin-no-unsanitized": "^2.0.1",
     "jose-jwe-jws": "0.1.6",
     "jsdoc": "^3.5.5",
+    "publish": "^0.6.0",
     "webpack": "3.7.1"
   },
   "scripts": {
     "build": "webpack",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "lint": "eslint --ext js,jsm src",
+    "ci:publish": "publish"
   },
   "repository": {
     "type": "git",

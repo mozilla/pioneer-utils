@@ -13,7 +13,7 @@ import { setCrypto as joseSetCrypto, Jose, JoseJWE } from "jose-jwe-jws/dist/jos
 import sampling from "./sampling.js";
 
 // The public keys used for encryption
-const PUBLIC_KEYS = require("./public_keys.json");
+import * as PUBLIC_KEYS from "./public_keys.json";
 
 const PIONEER_ID_PREF = "extensions.pioneer.cachedClientID";
 
@@ -54,15 +54,19 @@ joseSetCrypto(crypto);
 
 /**
  * Utilities for making Pioneer Studies.
- * @param {Config} config
  */
 export class PioneerUtils {
+  /**
+   * @param {Config} config
+   */
   constructor(config) {
     this.config = config;
     this.encrypter = null;
   }
 
-  /** */
+  /**
+   * @returns {Object} A public key
+   */
   getPublicKey() {
     const env = this.config.pioneerEnv || "prod";
     return PUBLIC_KEYS[env];
@@ -78,7 +82,9 @@ export class PioneerUtils {
     }
   }
 
-  /** */
+  /**
+   * @returns {String} Unique ID for a Pioneer user.
+   */
   getPioneerId() {
     let id = Services.prefs.getCharPref(PIONEER_ID_PREF, "");
 
@@ -103,7 +109,11 @@ export class PioneerUtils {
     return addon !== null && addon.isActive;
   }
 
-  /** @private */
+  /**
+   * @private
+   * @param {String} data The data to encrypt
+   * @returns {String}
+   */
   async encryptData(data) {
     this.setupEncrypter();
     return await this.encrypter.encrypt(data);
