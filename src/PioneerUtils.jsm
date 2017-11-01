@@ -207,7 +207,7 @@ export class PioneerUtils {
    *   The ID of the event ping that was submitted.
    */
   submitEventPing(eventId) {
-    if (!(eventId in PioneerUtils.EVENTS)) {
+    if (!(eventId in Object.values(PioneerUtils.EVENTS))) {
       throw new Error("Invalid event ID.");
     }
     return this.submitEncryptedPing("event", 1, { eventId });
