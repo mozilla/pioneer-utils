@@ -178,14 +178,9 @@ export class PioneerUtils {
    * @returns {String}
    *   The ID of the event ping that was submitted.
    */
-  endStudy(eventId) {
-    if (eventId === undefined) {
-      eventId = PioneerUtils.EVENTS.ENDED_NEUTRAL;
-    } else if (!(event in PioneerUtils.EVENTS)) {
-      throw new Error("Invalid event ID.");
-    }
+  endStudy(eventId = PioneerUtils.EVENTS.ENDED_NEUTRAL) {
     this.uninstall();
-    return this.submitEncryptedPing("event", 1, { eventId });
+    return this.submitEventPing(eventId);
   }
 
   /**
@@ -200,6 +195,22 @@ export class PioneerUtils {
     } else {
       throw new Error(`Could not find addon with ID: ${this.config.addonId}`);
     }
+  }
+
+  /**
+   * Submits an encrypted event ping.
+   *
+   * @param {String} eventId
+   *   The ID of the event that occured.
+   *
+   * @returns {String}
+   *   The ID of the event ping that was submitted.
+   */
+  submitEventPing(eventId) {
+    if (!(eventId in PioneerUtils.EVENTS)) {
+      throw new Error("Invalid event ID.");
+    }
+    return this.submitEncryptedPing("event", 1, { eventId });
   }
 }
 
