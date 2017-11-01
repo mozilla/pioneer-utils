@@ -26,11 +26,7 @@ joseSetCrypto(crypto);
  * @property {String} studyName
  *   Unique name of the study.
  *
- * @property {Number} schemaVersion
- *   Version of the schema to use for encrypted data. Should be an
- *   integer.
- *
- * @property {String?} pioneerEnv
+ * @property {String?} telemetryEnv
  *   Optional. Which telemetry environment to send data to. Should be
  *   either ``"prod"`` or ``"stage"``. Defaults to ``"prod"``.
  *
@@ -68,7 +64,7 @@ export class PioneerUtils {
    * @returns {Object} A public key
    */
   getPublicKey() {
-    const env = this.config.pioneerEnv || "prod";
+    const env = this.config.telemetryEnv || "prod";
     return PUBLIC_KEYS[env];
   }
 
@@ -123,13 +119,19 @@ export class PioneerUtils {
    * Encrypts the given data and submits a properly formatted
    * Pioneer ping to Telemetry.
    *
+   * @param {String} schemaName
+   *   The name of the schema to be used for validation.
+   *
+   * @param {int} schemaVersion
+   *   The version of the schema to be used for validation.
+   *
    * @param {Object} data
    *   A object containing data to be encrypted and submitted.
    *
    * @returns {String}
    *   The ID of the ping that was submitted
    */
-  async submitEncryptedPing(data) {
+  async submitEncryptedPing(schemaName, schemaVersion, data) {
     const pk = this.getPublicKey();
 
     const payload = {
@@ -137,7 +139,8 @@ export class PioneerUtils {
       encryptionKeyId: pk.id,
       pioneerId: this.getPioneerId(),
       studyName: this.config.studyName,
-      studyVersion: this.config.schemaVersion,
+      schemaName,
+      schemaVersion,
     };
 
     const telOptions = {
