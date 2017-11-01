@@ -26,6 +26,9 @@ joseSetCrypto(crypto);
  * @property {String} studyName
  *   Unique name of the study.
  *
+ * @property {String} addonId
+ *   The ID of the study addon.
+ *
  * @property {String?} telemetryEnv
  *   Optional. Which telemetry environment to send data to. Should be
  *   either ``"prod"`` or ``"stage"``. Defaults to ``"prod"``.
@@ -164,7 +167,63 @@ export class PioneerUtils {
     const hashKey = `${this.config.studyName}/${await this.getPioneerId()}`;
     return sampling.chooseWeighted(this.config.branches, hashKey);
   }
+
+  /**
+   * Ends a study by uninstalling the addon and sending a relevant
+   * event ping to telemetry.
+   *
+   * @param {String?} eventId
+   *   The ID of the event that occured.
+   * 
+   * @returns {String}
+   *   The ID of the event ping that was submitted.
+   */
+  endStudy(eventId = PioneerUtils.EVENTS.ENDED_NEUTRAL) {
+    this.uninstall();
+    return this.submitEventPing(eventId);
+  }
+
+  /**
+   * Uninstalls the study addon.
+   *
+   * @returns {void}
+   */
+  async uninstall() {
+    const addon = await AddonManager.getAddonByID(this.config.addonId);
+    if (addon) {
+      addon.uninstall();
+    } else {
+      throw new Error(`Could not find addon with ID: ${this.config.addonId}`);
+    }
+  }
+
+  /**
+   * Submits an encrypted event ping.
+   *
+   * @param {String} eventId
+   *   The ID of the event that occured.
+   *
+   * @returns {String}
+   *   The ID of the event ping that was submitted.
+   */
+  submitEventPing(eventId) {
+    if (!Object.values(PioneerUtils.EVENTS).includes(eventId)) {
+      throw new Error("Invalid event ID.");
+    }
+    return this.submitEncryptedPing("event", 1, { eventId });
+  }
 }
+
+
+PioneerUtils.EVENTS = {
+  INELIGIBLE: "ineligible",
+  EXPIRED: "expired",
+  USER_DISABLE: "user-disable",
+  ENDED_POSITIVE: "ended-positive",
+  ENDED_NEUTRAL: "ended-neutral",
+  ENDED_NEGATIVE: "ended-negative",
+};
+
 
 this.PioneerUtils = PioneerUtils;
 this.EXPORTED_SYMBOLS = ["PioneerUtils"];
