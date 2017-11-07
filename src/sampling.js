@@ -45,7 +45,7 @@ export async function hashFraction(input) {
   const hash = await sha256(input);
   const bits = 48; // meaningful precision of a 64bit floating point number
   const substringSize = bits / 4;
-  return parseInt(hash.substr(0, substringSize), 16) / Math.pow(16, bits);
+  return parseInt(hash.substr(0, substringSize), 16) / Math.pow(2, bits);
 }
 
 /**
