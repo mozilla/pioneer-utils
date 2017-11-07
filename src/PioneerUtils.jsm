@@ -17,6 +17,16 @@ import * as PUBLIC_KEYS from "./public_keys.json";
 
 const PIONEER_ID_PREF = "extensions.pioneer.cachedClientID";
 
+const EVENTS = {
+  INELIGIBLE: "ineligible",
+  EXPIRED: "expired",
+  USER_DISABLE: "user-disable",
+  ENDED_POSITIVE: "ended-positive",
+  ENDED_NEUTRAL: "ended-neutral",
+  ENDED_NEGATIVE: "ended-negative",
+};
+
+
 // Make crypto available and make jose use it.
 Cu.importGlobalProperties(["crypto"]);
 joseSetCrypto(crypto);
@@ -178,7 +188,7 @@ export class PioneerUtils {
    * @returns {String}
    *   The ID of the event ping that was submitted.
    */
-  endStudy(eventId = PioneerUtils.EVENTS.ENDED_NEUTRAL) {
+  endStudy(eventId = EVENTS.ENDED_NEUTRAL) {
     this.uninstall();
     return this.submitEventPing(eventId);
   }
@@ -198,6 +208,16 @@ export class PioneerUtils {
   }
 
   /**
+   * Gets an object that is a mapping of all the available events.
+   *
+   * @returns {Object}
+   *   An object with all the available events.
+   */
+  getAvailableEvents() {
+    return EVENTS;
+  }
+
+  /**
    * Submits an encrypted event ping.
    *
    * @param {String} eventId
@@ -207,22 +227,12 @@ export class PioneerUtils {
    *   The ID of the event ping that was submitted.
    */
   submitEventPing(eventId) {
-    if (!Object.values(PioneerUtils.EVENTS).includes(eventId)) {
+    if (!Object.values(EVENTS).includes(eventId)) {
       throw new Error("Invalid event ID.");
     }
     return this.submitEncryptedPing("event", 1, { eventId });
   }
 }
-
-
-PioneerUtils.EVENTS = {
-  INELIGIBLE: "ineligible",
-  EXPIRED: "expired",
-  USER_DISABLE: "user-disable",
-  ENDED_POSITIVE: "ended-positive",
-  ENDED_NEUTRAL: "ended-neutral",
-  ENDED_NEGATIVE: "ended-negative",
-};
 
 
 this.PioneerUtils = PioneerUtils;
