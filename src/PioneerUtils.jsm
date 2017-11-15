@@ -129,6 +129,21 @@ export class PioneerUtils {
   }
 
   /**
+   * Checks whether Telemetry is enabled for the user.
+   *
+   * @returns {Boolean}
+   *   A boolean indicated whether Telemetry is enabled.
+   */
+  isTelemetryEnabled() {
+    const unified = Services.prefs.getBoolPref("toolkit.telemetry.unified", false);
+    if (unified) {
+      return Services.prefs.getBoolPref("toolkit.telemetry.enabled", false);
+    } else {
+      return Services.prefs.getBoolPref("datareporting.healthreport.uploadEnabled", false);
+    }
+  }
+
+  /**
    * Encrypts the given data and submits a properly formatted
    * Pioneer ping to Telemetry.
    *
@@ -145,6 +160,10 @@ export class PioneerUtils {
    *   The ID of the ping that was submitted
    */
   async submitEncryptedPing(schemaName, schemaVersion, data) {
+    if (!this.isTelemetryEnabled()) {
+      return;
+    }
+
     const pk = this.getPublicKey();
 
     const payload = {
