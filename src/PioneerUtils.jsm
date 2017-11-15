@@ -135,12 +135,10 @@ export class PioneerUtils {
    *   A boolean indicated whether Telemetry is enabled.
    */
   isTelemetryEnabled() {
-    const unified = Services.prefs.getBoolPref("toolkit.telemetry.unified", false);
-    if (unified) {
+    if (Services.prefs.getBoolPref("toolkit.telemetry.unified", false)) {
       return Services.prefs.getBoolPref("toolkit.telemetry.enabled", false);
-    } else {
-      return Services.prefs.getBoolPref("datareporting.healthreport.uploadEnabled", false);
     }
+    return Services.prefs.getBoolPref("datareporting.healthreport.uploadEnabled", false);
   }
 
   /**
@@ -161,7 +159,7 @@ export class PioneerUtils {
    */
   async submitEncryptedPing(schemaName, schemaVersion, data) {
     if (!this.isTelemetryEnabled()) {
-      return;
+      return null;
     }
 
     const pk = this.getPublicKey();
