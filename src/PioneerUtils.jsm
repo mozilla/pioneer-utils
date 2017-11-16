@@ -114,7 +114,7 @@ export class PioneerUtils {
    *   A boolean to indicate opt-in status.
    */
   async isUserOptedIn() {
-    const isShieldEnabled = Services.prefs.getBoolPref("app.shield.optoutstudies.enabled", false);
+    const isShieldEnabled = Services.prefs.getBoolPref("app.shield.optoutstudies.enabled", true);
     const addon = await AddonManager.getAddonByID("pioneer-opt-in@mozilla.org");
     return isShieldEnabled && addon !== null && addon.isActive;
   }
