@@ -5,6 +5,7 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
 XPCOMUtils.defineLazyModuleGetter(this, "AddonManager", "resource://gre/modules/AddonManager.jsm");
 XPCOMUtils.defineLazyModuleGetter(this, "Services", "resource://gre/modules/Services.jsm");
+XPCOMUtils.defineLazyModuleGetter(this, "Log", "resource://gre/modules/Log.jsm");
 
 const { TelemetryController } = Cu.import("resource://gre/modules/TelemetryController.jsm", null);
 const { generateUUID } = Cc["@mozilla.org/uuid-generator;1"].getService(Ci.nsIUUIDGenerator);
@@ -59,6 +60,10 @@ joseSetCrypto(crypto);
  *
  * @property {Number} branches[].weight
  *   Optional, defaults to 1.
+ *
+ * @property {Boolean?} devMode
+ *   If this is set to true, PioneerUtils enables extra logging and
+ *   other settings for developers.
  */
 
 /**
@@ -71,6 +76,7 @@ export class PioneerUtils {
   constructor(config) {
     this.config = config;
     this.encrypter = null;
+    this._logger = null;
   }
 
   /**
@@ -191,7 +197,7 @@ export class PioneerUtils {
    *
    * @param {String?} eventId
    *   The ID of the event that occured.
-   * 
+   *
    * @returns {String}
    *   The ID of the event ping that was submitted.
    */
@@ -238,6 +244,24 @@ export class PioneerUtils {
       throw new Error("Invalid event ID.");
     }
     return this.submitEncryptedPing("event", 1, { eventId });
+  }
+
+  /**
+   * Logger for Pioneer. It has methods like "warn" and "debug".
+   *
+   * @returns {Object} Logger
+   */
+  get log() {
+    if (this._logger === null) {
+      this._logger = Log.repository.getLogger(`pioneer.${this.config.studyName}`);
+      this._logger.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
+      if (this.config.devMode) {
+        this._logger.level = Log.Level.Debug;
+      } else {
+        this._logger.level = Log.Level.Warn;
+      }
+    }
+    return this._logger;
   }
 }
 
