@@ -114,8 +114,9 @@ export class PioneerUtils {
    *   A boolean to indicate opt-in status.
    */
   async isUserOptedIn() {
+    const isShieldEnabled = Services.prefs.getBoolPref("app.shield.optoutstudies.enabled", false);
     const addon = await AddonManager.getAddonByID("pioneer-opt-in@mozilla.org");
-    return addon !== null && addon.isActive;
+    return isShieldEnabled && addon !== null && addon.isActive;
   }
 
   /**
@@ -145,6 +146,11 @@ export class PioneerUtils {
    *   The ID of the ping that was submitted
    */
   async submitEncryptedPing(schemaName, schemaVersion, data) {
+    // If the user is no longer opted in we should not be submitting pings.
+    if (!this.isUserOptedIn()) {
+      return null;
+    }
+
     const pk = this.getPublicKey();
 
     const payload = {
