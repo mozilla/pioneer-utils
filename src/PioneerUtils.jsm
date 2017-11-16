@@ -114,8 +114,9 @@ export class PioneerUtils {
    *   A boolean to indicate opt-in status.
    */
   async isUserOptedIn() {
+    const isShieldEnabled = Services.prefs.getBoolPref("app.shield.optoutstudies.enabled", false);
     const addon = await AddonManager.getAddonByID("pioneer-opt-in@mozilla.org");
-    return addon !== null && addon.isActive;
+    return isShieldEnabled && addon !== null && addon.isActive;
   }
 
   /**
@@ -126,19 +127,6 @@ export class PioneerUtils {
   async encryptData(data) {
     this.setupEncrypter();
     return await this.encrypter.encrypt(data);
-  }
-
-  /**
-   * Checks whether Telemetry is enabled for the user.
-   *
-   * @returns {Boolean}
-   *   A boolean indicated whether Telemetry is enabled.
-   */
-  isTelemetryEnabled() {
-    if (Services.prefs.getBoolPref("toolkit.telemetry.unified", false)) {
-      return Services.prefs.getBoolPref("toolkit.telemetry.enabled", false);
-    }
-    return Services.prefs.getBoolPref("datareporting.healthreport.uploadEnabled", false);
   }
 
   /**
@@ -158,7 +146,8 @@ export class PioneerUtils {
    *   The ID of the ping that was submitted
    */
   async submitEncryptedPing(schemaName, schemaVersion, data) {
-    if (!this.isTelemetryEnabled()) {
+    // If the user is no longer opted in we should not be submitting pings.
+    if (!this.isUserOptedIn()) {
       return null;
     }
 
