@@ -113,6 +113,16 @@ export class PioneerUtils {
   }
 
   /**
+   * Checks to see if SHIELD is enabled for a user.
+   *
+   * @returns {Boolean}
+   *   A boolean to indicate SHIELD opt-in status.
+   */
+  isShieldEnabled() {
+    return Services.prefs.getBoolPref("app.shield.optoutstudies.enabled", true);
+  }
+
+  /**
    * Checks to see if the user has opted in to Pioneer. This is
    * done by checking that the opt-in addon is installed and active.
    *
@@ -120,9 +130,8 @@ export class PioneerUtils {
    *   A boolean to indicate opt-in status.
    */
   async isUserOptedIn() {
-    const isShieldEnabled = Services.prefs.getBoolPref("app.shield.optoutstudies.enabled", true);
     const addon = await AddonManager.getAddonByID("pioneer-opt-in@mozilla.org");
-    return isShieldEnabled && addon !== null && addon.isActive;
+    return this.isShieldEnabled() && addon !== null && addon.isActive;
   }
 
   /**
@@ -153,7 +162,8 @@ export class PioneerUtils {
    */
   async submitEncryptedPing(schemaName, schemaVersion, data) {
     // If the user is no longer opted in we should not be submitting pings.
-    if (!this.isUserOptedIn()) {
+    const isUserOptedIn = await this.isUserOptedIn();
+    if (!isUserOptedIn) {
       return null;
     }
 
