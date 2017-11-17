@@ -1,4 +1,13 @@
-{
+export interface Key {
+  id: string,
+  key: {
+    e: string,
+    kty: "RSA",
+    n: string,
+  }
+}
+
+const keys: { [env: string]: Key } = {
   "stage": {
     "id": "pioneer-20170905",
     "key": {
@@ -15,4 +24,6 @@
       "n": "_uqWswIJpR-cFdwwtNdAI_B_0sPIyQyBy6hiiQ0GKLF2k1PkN6RaxtbZK8v1_BriYtEgWn3hNzJNbKBWBMFtF5-8OfvxH-hgIIeDmRmeHmynLBBCDVf2HAZYaDXJiM7s6LBubDuoPDc3Ovoj287W7E4LgzsBS0wo3ARIwlKn6x0Dj5tu6CQ5r3t0GKZoSFkiVZA7nke-VC55nlDacIIYAqkMX0dzsBaCRmf2C5JJTP-K14iRLB5VFGZ_vnoZ-Wi1BGRV2TNRl3xl0lFJIcPklFpU3hsnRPiF4y7kenU6OIhJVQMqX1CtCF698k7SFCYJt7r1ymWJE-tv0ZwF9b1MFw"
     }
   }
-}
+};
+
+export default keys;

@@ -1,20 +1,22 @@
-"use strict";
-
 const { classes: Cc, interfaces: Ci, utils: Cu } = Components;
-Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+const { XPCOMUtils } = Cu.import("resource://gre/modules/XPCOMUtils.jsm", {}) as XPCOMUtils;
 
 XPCOMUtils.defineLazyModuleGetter(this, "AddonManager", "resource://gre/modules/AddonManager.jsm");
+declare var AddonManager: AddonManager;
 XPCOMUtils.defineLazyModuleGetter(this, "Services", "resource://gre/modules/Services.jsm");
+declare var Services: Services;
 XPCOMUtils.defineLazyModuleGetter(this, "Log", "resource://gre/modules/Log.jsm");
+declare var Log: Log;
 
-const { TelemetryController } = Cu.import("resource://gre/modules/TelemetryController.jsm", null);
-const { generateUUID } = Cc["@mozilla.org/uuid-generator;1"].getService(Ci.nsIUUIDGenerator);
+const { TelemetryController } = Cu.import("resource://gre/modules/TelemetryController.jsm", {}) as TelemetryControllerType;
+const { generateUUID } = Cc["@mozilla.org/uuid-generator;1"].getService(Ci.nsIUUIDGenerator) as UUIDGeneratorType;
 
-import { setCrypto as joseSetCrypto, Jose, JoseJWE } from "jose-jwe-jws/dist/jose-commonjs.js";
-import sampling from "./sampling.js";
+import { setCrypto as joseSetCrypto, Jose, JoseJWE } from "jose-jwe-jws";
+
+import sampling, { WeightedBranch } from "./sampling";
 
 // The public keys used for encryption
-import * as PUBLIC_KEYS from "./public_keys.json";
+import publicKeys, { Key } from "./publicKeys";
 
 const PIONEER_ID_PREF = "extensions.pioneer.cachedClientID";
 
@@ -27,67 +29,61 @@ const EVENTS = {
   ENDED_NEGATIVE: "ended-negative",
 };
 
-
 // Make crypto available and make jose use it.
 Cu.importGlobalProperties(["crypto"]);
+declare var crypto: Crypto;
 joseSetCrypto(crypto);
 
-/**
- * @typedef {Object} Config
- * @property {String} studyName
- *   Unique name of the study.
- *
- * @property {String} addonId
- *   The ID of the study addon.
- *
- * @property {String?} telemetryEnv
- *   Optional. Which telemetry environment to send data to. Should be
- *   either ``"prod"`` or ``"stage"``. Defaults to ``"prod"``.
- *
- * @property {Object} branches
- *   Array of branches objects. If useful, you may store extra data on
- *   each branch. It will be included when choosing a branch.
- *
- *   Example:
- *     [
- *       { name: "control", weight: 1 },
- *       { name: "variation1", weight: 2 },
- *       { name: "variation2", weight: 2 },
- *     ]
- *
- * @property {String} branches[].name
- *   The name of the branch.
- *
- * @property {Number} branches[].weight
- *   Optional, defaults to 1.
- *
- * @property {Boolean?} devMode
- *   If this is set to true, PioneerUtils enables extra logging and
- *   other settings for developers.
- */
+export interface Config {
+  /** Unique name of the study. */
+  studyName: string,
+
+  /** The ID of the study add-on */
+  addonId: string,
+
+  /** Optional. Which telemetry environment to send data to. */
+  telemetryEnv?: "prod" | "stage";
+
+  /**
+   * Branches of the experiment. If useful, you may store extra
+   * data on each branch. It will be included when choosing a branch
+   */
+  branches: Array<WeightedBranch>,
+
+  /**
+   * If this is set to true, PioneerUtils enables extra logging and
+   * other settings for developers.
+   */
+  devMode?: boolean;
+}
+
+export interface SubmitEncryptedPingOptions {
+  /** Force submission of pings, even if otherwise ineligible. */
+  force?: boolean;
+}
 
 /**
  * Utilities for making Pioneer Studies.
  */
 export class PioneerUtils {
-  /**
-   * @param {Config} config
-   */
-  constructor(config) {
+  private config: Config;
+  private encrypter: IEncrypter | null;
+  private _logger: Logger | null;
+
+  constructor(config: Config) {
     this.config = config;
     this.encrypter = null;
     this._logger = null;
   }
 
   /**
-   * @returns {Object} A public key
+   * Gets the public key used to encrypt telemetry data.
    */
-  getPublicKey() {
+  getPublicKey(): Key {
     const env = this.config.telemetryEnv || "prod";
-    return PUBLIC_KEYS[env];
+    return publicKeys[env];
   }
 
-  /** */
   setupEncrypter() {
     if (this.encrypter === null) {
       const pk = this.getPublicKey();
@@ -98,7 +94,7 @@ export class PioneerUtils {
   }
 
   /**
-   * @returns {String} Unique ID for a Pioneer user.
+   * Gets the unique ID for a Pioneer user.
    */
   getPioneerId() {
     let id = Services.prefs.getCharPref(PIONEER_ID_PREF, "");
@@ -113,21 +109,16 @@ export class PioneerUtils {
   }
 
   /**
-   * Checks to see if SHIELD is enabled for a user.
-   *
-   * @returns {Boolean}
-   *   A boolean to indicate SHIELD opt-in status.
+   * Checks to see if Shield is enabled for a user.
    */
-  isShieldEnabled() {
+  isShieldEnabled(): boolean {
     return Services.prefs.getBoolPref("app.shield.optoutstudies.enabled", true);
   }
 
   /**
-   * Checks to see if the user has opted in to Pioneer. This is
-   * done by checking that the opt-in addon is installed and active.
+   * Checks to see if the user has opted in to Pioneer.
    *
-   * @returns {Boolean}
-   *   A boolean to indicate opt-in status.
+   * This is done by checking that the opt-in addon is installed and active.
    */
   async isUserOptedIn() {
     const addon = await AddonManager.getAddonByID("pioneer-opt-in@mozilla.org");
@@ -135,11 +126,9 @@ export class PioneerUtils {
   }
 
   /**
-   * @private
-   * @param {String} data The data to encrypt
-   * @returns {String}
+   * Encrypt data in preparation to send to Telemetry.
    */
-  async encryptData(data) {
+  private async encryptData(data: string) {
     this.setupEncrypter();
     return await this.encrypter.encrypt(data);
   }
@@ -148,28 +137,30 @@ export class PioneerUtils {
    * Encrypts the given data and submits a properly formatted
    * Pioneer ping to Telemetry.
    *
-   * @param {String} schemaName
+   * @param schemaName
    *   The name of the schema to be used for validation.
    *
-   * @param {int} schemaVersion
+   * @param schemaVersion
    *   The version of the schema to be used for validation.
    *
-   * @param {Object} data
+   * @param data
    *   A object containing data to be encrypted and submitted.
    *
-   * @param {Object} options
-   *   An object with additional options for the function.
+   * @param options.force
+   *   A boolean to indicate whether to force submission of the
+   *   ping, ignoring eligibility checks.
    *
-   * @param {Boolean} options.force
-   *   A boolean to indicate whether to force submission of the ping.
-   *
-   * @returns {String}
-   *   The ID of the ping that was submitted
+   * @returns The ID of the ping that was submitted.
    */
-  async submitEncryptedPing(schemaName, schemaVersion, data, options = {}) {
-    // If the user is no longer opted in we should not be submitting pings.
+  async submitEncryptedPing(
+    schemaName: string,
+    schemaVersion: number,
+    data: object,
+    { force = false }: SubmitEncryptedPingOptions = {},
+  ): Promise<number> {
+    // If the user is no longer opted in, we should not be submitting pings.
     const isUserOptedIn = await this.isUserOptedIn();
-    if (!isUserOptedIn && !options.force) {
+    if (!isUserOptedIn && !force) {
       return null;
     }
 
@@ -198,12 +189,11 @@ export class PioneerUtils {
    * pioneerId. As long as neither of those change, it will always
    * return the same value.
    *
-   * @returns {Object}
-   *   An object from `config.branches`, chosen based on a `weight` key.
+   * @returns An object from `config.branches`, chosen based on a `weight` key.
    */
   async chooseBranch() {
     const pioneerId = await this.getPioneerId();
-    const hashKey = `${this.config.studyName}/${pioneerId}`;
+    const hashKey = `${this.config.studyName}/${this.getPioneerId()}`;
     return sampling.chooseWeighted(this.config.branches, hashKey);
   }
 
@@ -211,23 +201,18 @@ export class PioneerUtils {
    * Ends a study by uninstalling the addon and sending a relevant
    * event ping to telemetry.
    *
-   * @param {String?} eventId
-   *   The ID of the event that occured.
-   *
-   * @returns {String}
-   *   The ID of the event ping that was submitted.
+   * @param eventId The ID of the event that occured.
+   * @returns The ID of the event ping that was submitted.
    */
-  endStudy(eventId = EVENTS.ENDED_NEUTRAL) {
-    this.uninstall();
-    return this.submitEventPing(eventId, { force: true });
+  async endStudy(eventId = EVENTS.ENDED_NEUTRAL): Promise<void> {
+    await this.submitEventPing(eventId, { force: true });
+    await this.uninstall();
   }
 
   /**
    * Uninstalls the study addon.
-   *
-   * @returns {void}
    */
-  async uninstall() {
+  async uninstall(): Promise<void> {
     const addon = await AddonManager.getAddonByID(this.config.addonId);
     if (addon) {
       addon.uninstall();
@@ -236,29 +221,18 @@ export class PioneerUtils {
     }
   }
 
-  /**
-   * Gets an object that is a mapping of all the available events.
-   *
-   * @returns {Object}
-   *   An object with all the available events.
-   */
-  getAvailableEvents() {
+  getAvailableEvents(): { [name: string]: string } {
     return EVENTS;
   }
 
   /**
    * Submits an encrypted event ping.
    *
-   * @param {String} eventId
-   *   The ID of the event that occured.
-   *
-   * @param {Object} options
-   *   An object of options to be passed through to submitEncryptedPing
-   *
-   * @returns {String}
-   *   The ID of the event ping that was submitted.
+   * @param eventId The ID of the event that occured.
+   * @param options Object of options to be passed through to submitEncryptedPing
+   * @returns The ID of the event ping that was submitted.
    */
-  submitEventPing(eventId, options = {}) {
+  submitEventPing(eventId: string, options: SubmitEncryptedPingOptions = {}): Promise<number> {
     if (!Object.values(EVENTS).includes(eventId)) {
       throw new Error("Invalid event ID.");
     }
@@ -267,10 +241,8 @@ export class PioneerUtils {
 
   /**
    * Logger for Pioneer. It has methods like "warn" and "debug".
-   *
-   * @returns {Object} Logger
    */
-  get log() {
+  get log(): Logger {
     if (this._logger === null) {
       this._logger = Log.repository.getLogger(`pioneer.${this.config.studyName}`);
       this._logger.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
@@ -283,7 +255,6 @@ export class PioneerUtils {
     return this._logger;
   }
 }
-
 
 this.PioneerUtils = PioneerUtils;
 this.EXPORTED_SYMBOLS = ["PioneerUtils"];

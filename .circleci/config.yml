@@ -13,18 +13,30 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+            - v1-dependencies-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
 
       - run: npm install
 
       - run: npm run lint
 
+      - run: npm run docs
+
+      - run: npm run build
+
+      - add_ssh_keys:
+          fingerprints:
+            - "b8:a2:ea:5d:d8:4e:b7:15:1e:70:57:86:ae:fa:65:09"
+
       - deploy:
           command: |
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            npm run ci:publish
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+              git config --global user.email "circleci-automation@pioneer.mozilla.org"
+              git config --global user.name "CircleCI Automation"
+              npm run ci:publish
+            fi
 
       - save_cache:
           paths:
