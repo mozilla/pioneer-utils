@@ -157,6 +157,9 @@ export class PioneerUtils {
    * @param {Object} data
    *   A object containing data to be encrypted and submitted.
    *
+   * @param {Boolean} forceSubmit
+   *   A boolean indicating whether to force the ping to be submitted.
+   *
    * @returns {String}
    *   The ID of the ping that was submitted
    */
@@ -245,6 +248,9 @@ export class PioneerUtils {
    *
    * @param {String} eventId
    *   The ID of the event that occured.
+   *
+   * @param {Boolean} forceSubmit
+   *   A boolean indicating whether to force the ping to be submitted.
    *
    * @returns {String}
    *   The ID of the event ping that was submitted.
