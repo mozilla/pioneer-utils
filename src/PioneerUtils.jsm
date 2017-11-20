@@ -160,10 +160,10 @@ export class PioneerUtils {
    * @returns {String}
    *   The ID of the ping that was submitted
    */
-  async submitEncryptedPing(schemaName, schemaVersion, data) {
+  async submitEncryptedPing(schemaName, schemaVersion, data, forceSubmit) {
     // If the user is no longer opted in we should not be submitting pings.
     const isUserOptedIn = await this.isUserOptedIn();
-    if (!isUserOptedIn) {
+    if (!isUserOptedIn && !forceSubmit) {
       return null;
     }
 
@@ -213,7 +213,7 @@ export class PioneerUtils {
    */
   endStudy(eventId = EVENTS.ENDED_NEUTRAL) {
     this.uninstall();
-    return this.submitEventPing(eventId);
+    return this.submitEventPing(eventId, true);
   }
 
   /**
@@ -249,11 +249,11 @@ export class PioneerUtils {
    * @returns {String}
    *   The ID of the event ping that was submitted.
    */
-  submitEventPing(eventId) {
+  submitEventPing(eventId, forceSubmit) {
     if (!Object.values(EVENTS).includes(eventId)) {
       throw new Error("Invalid event ID.");
     }
-    return this.submitEncryptedPing("event", 1, { eventId });
+    return this.submitEncryptedPing("event", 1, { eventId }, forceSubmit);
   }
 
   /**
