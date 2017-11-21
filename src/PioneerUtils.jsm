@@ -157,16 +157,19 @@ export class PioneerUtils {
    * @param {Object} data
    *   A object containing data to be encrypted and submitted.
    *
-   * @param {Boolean} forceSubmit
-   *   A boolean indicating whether to force the ping to be submitted.
+   * @param {Object} options
+   *   An object with additional options for the function.
+   *
+   * @param {Boolean} options.force
+   *   A boolean to indicate whether to force submission of the ping.
    *
    * @returns {String}
    *   The ID of the ping that was submitted
    */
-  async submitEncryptedPing(schemaName, schemaVersion, data, forceSubmit) {
+  async submitEncryptedPing(schemaName, schemaVersion, data, options = {}) {
     // If the user is no longer opted in we should not be submitting pings.
     const isUserOptedIn = await this.isUserOptedIn();
-    if (!isUserOptedIn && !forceSubmit) {
+    if (!isUserOptedIn && !options.force) {
       return null;
     }
 
@@ -216,7 +219,7 @@ export class PioneerUtils {
    */
   endStudy(eventId = EVENTS.ENDED_NEUTRAL) {
     this.uninstall();
-    return this.submitEventPing(eventId, true);
+    return this.submitEventPing(eventId, { force: true });
   }
 
   /**
@@ -249,17 +252,17 @@ export class PioneerUtils {
    * @param {String} eventId
    *   The ID of the event that occured.
    *
-   * @param {Boolean} forceSubmit
-   *   A boolean indicating whether to force the ping to be submitted.
+   * @param {Object} options
+   *   An object of options to be passed through to submitEncryptedPing
    *
    * @returns {String}
    *   The ID of the event ping that was submitted.
    */
-  submitEventPing(eventId, forceSubmit) {
+  submitEventPing(eventId, options = {}) {
     if (!Object.values(EVENTS).includes(eventId)) {
       throw new Error("Invalid event ID.");
     }
-    return this.submitEncryptedPing("event", 1, { eventId }, forceSubmit);
+    return this.submitEncryptedPing("event", 1, { eventId }, options);
   }
 
   /**
