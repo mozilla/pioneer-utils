@@ -1,6 +1,6 @@
 {
   "name": "pioneer-utils",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A utility library for Pioneer studies",
   "dependencies": {},
   "devDependencies": {
