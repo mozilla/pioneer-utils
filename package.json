@@ -8,16 +8,31 @@
     "eslint": "^4.9.0",
     "eslint-plugin-mozilla": "^0.4.5",
     "eslint-plugin-no-unsanitized": "^2.0.1",
+    "eslint-plugin-typescript": "^0.8.0",
+    "gh-pages": "^1.1.0",
+    "github-pages": "^3.0.2",
     "jose-jwe-jws": "0.1.6",
     "jsdoc": "^3.5.5",
+    "npm-run-all": "^4.1.2",
     "publish": "^0.6.0",
-    "webpack": "3.7.1"
+    "ts-loader": "^3.1.1",
+    "tslint": "^5.8.0",
+    "tslint-eslint-rules": "^4.1.1",
+    "typedoc": "^0.9.0",
+    "typescript": "^2.6.1",
+    "typescript-eslint-parser": "^9.0.0",
+    "webpack": "^3.7.1"
   },
   "scripts": {
     "build": "webpack",
     "prepare": "npm run build",
-    "lint": "eslint --ext js,jsm src",
-    "ci:publish": "publish"
+    "lint": "npm-run-all lint:*",
+    "lint:eslint": "eslint --ext ts src",
+    "lint:tslint": "tslint src/**/*.ts",
+    "docs": "typedoc --out docs src",
+    "ci:publish": "npm-run-all ci:publish:*",
+    "ci:publish:npm": "publish",
+    "ci:publish:docs": "gh-pages --dist docs"
   },
   "repository": {
     "type": "git",

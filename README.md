@@ -1,6 +1,8 @@
-# pioneer-studies-addon-utils
+# pioneer-utils
 
-## Documentation
+Write add-ons for use with Pioneer more easily.
 
-Full documentation is available here:
-http://pioneer-studies-addon-utils.readthedocs.io/
+## Get the utils
+
+* [source code](https://github.com/mozilla/pioneer-studies-addon-utils)
+* [npm package](https://www.npmjs.com/package/pioneer-studies-addon-utils)

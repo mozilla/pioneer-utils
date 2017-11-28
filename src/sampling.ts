@@ -1,13 +1,17 @@
+export interface WeightedBranch {
+  /** The name of the branch. */
+  name: string;
+  /** Weight of the branch. Defaults to 1. */
+  weight?: number;
+}
+
 /**
  * Deterministically choose an option from `options` based on `hashKey`.
- * @param {Array} options
- * @param {number?} options[].weight
- *   Optional, defaults to 1.
- * @param {string} hashKey
- * @returns {Object}
- *   One of the objects in `options`.
  */
-export async function chooseWeighted(options, hashKey) {
+export async function chooseWeighted(
+  options: Array<WeightedBranch>,
+  hashKey: string
+): Promise<WeightedBranch> {
   if (options.length === 0) {
     throw new Error("Cannot choose from an empty set of options");
   }
@@ -41,15 +45,13 @@ export async function chooseWeighted(options, hashKey) {
       return opt;
     }
   }
-
   throw new Error("Assertion error, Did not chose a value");
 }
 
 /**
- * @param {string} input
- * @returns {number} Float between 0 and 1, inclusive.
+ * @return Float between 0 and 1, inclusive.
  */
-export async function hashFraction(input) {
+export async function hashFraction(input: string): Promise<number> {
   const hash = await sha256(input);
   const bits = 48; // meaningful precision of a 64bit floating point number
   const substringSize = bits / 4;
@@ -57,10 +59,9 @@ export async function hashFraction(input) {
 }
 
 /**
- * @param {string} message
- * @returns {string} Hex encoded sha256 hash.
+ * @return Hex encoded sha256 hash.
  */
-export async function sha256(message) {
+export async function sha256(message: string) {
   const msgBuffer = new TextEncoder("utf-8").encode(message);
   const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
