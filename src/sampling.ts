@@ -15,14 +15,21 @@ export async function chooseWeighted(
   if (options.length === 0) {
     throw new Error("Cannot choose from an empty set of options");
   }
+
+  // Ensure all options have a weight assigned
+  const weightedOptions = options.map(o => {
+    o.weight = o.weight || 1;
+    return o;
+  });
+
   /* Conceptually, this works by making a space that is the range from
    * 0 to sum(weights), assigning each choice a proportional section
    * of that space, choosing a point in that space, and returning the
    * object that corresponds to that point.
    *
    * options = [{name: "A", weight: 1}, {name: "B", weight: 2}, {name: "C", weight: 3}]
-   * maxWeight = 1 + 2 + 3 = 6
-   * choice = hashFraction(input) * maxWeight = 1.5
+   * totalWeight = 1 + 2 + 3 = 6
+   * choice = hashFraction(input) * totalWeight = 1.5
    *
    * 0   1   2   3   4   5    6
    * | A |   B   |     C      |
@@ -30,10 +37,10 @@ export async function chooseWeighted(
    *        \_ choice = 1.5
    *           so return {name: "B", weight: 2}
    */
-  const maxWeight = options.map((o) => o.weight || 1).reduce((a, b) => a + b);
-  let choice = await hashFraction(hashKey) * maxWeight;
-  for (let opt of options) {
-    choice -= (opt.weight || 1);
+  const totalWeight = weightedOptions.map(o => o.weight).reduce((a, b) => a + b);
+  let choice = await hashFraction(hashKey) * totalWeight;
+  for (let opt of weightedOptions) {
+    choice -= opt.weight;
     if (choice <= 0) {
       return opt;
     }
@@ -48,7 +55,7 @@ export async function hashFraction(input: string): Promise<number> {
   const hash = await sha256(input);
   const bits = 48; // meaningful precision of a 64bit floating point number
   const substringSize = bits / 4;
-  return parseInt(hash.substr(0, substringSize), 16) / Math.pow(16, bits);
+  return parseInt(hash.substr(0, substringSize), 16) / Math.pow(2, bits);
 }
 
 /**

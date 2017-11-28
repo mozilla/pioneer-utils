@@ -3,7 +3,6 @@
     "tslint-eslint-rules"
   ],
   "rules": {
-    "arrow-parens": true,
     "handle-callback-err": true,
     "indent": [true, "spaces", 2],
     "no-constant-condition": true,
