@@ -32,7 +32,7 @@
     "docs": "typedoc --out docs src",
     "ci:publish": "npm-run-all ci:publish:*",
     "ci:publish:npm": "publish",
-    "ci:publish:docs": "gh-pages --dist docs"
+    "ci:publish:docs": "touch docs/.nojekyll && gh-pages --dotfiles --dist docs"
   },
   "repository": {
     "type": "git",
