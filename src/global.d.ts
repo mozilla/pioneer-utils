@@ -1,11 +1,13 @@
 interface ComponentsType {
   classes: {
     [id: string]: {
+      createInstance(interface: any): any;
       getService(interface: any): any;
     }
   },
 
   interfaces: {
+    nsIScriptableUnicodeConverter: any,
     nsIUUIDGenerator: any,
   },
 
