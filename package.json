@@ -1,6 +1,6 @@
 {
   "name": "pioneer-utils",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "A utility library for Pioneer studies",
   "dependencies": {},
   "devDependencies": {
@@ -21,12 +21,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mozilla/pioneer-studies-addon-utils.git"
+    "url": "git+https://github.com/mozilla/pioneer-utils.git"
   },
   "author": "Mozilla",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/mozilla/pioneer-studies-addon-utils/issues"
+    "url": "https://github.com/mozilla/pioneer-utils/issues"
   },
-  "homepage": "https://github.com/mozilla/pioneer-studies-addon-utils#readme"
+  "homepage": "https://github.com/mozilla/pioneer-utils#readme"
 }
