@@ -133,7 +133,7 @@ export class PioneerUtils {
     const addon = await AddonManager.getAddonByID("pioneer-opt-in@mozilla.org");
     return this.isShieldEnabled() && addon !== null && addon.isActive;
   }
-  
+
   /**
    * Calculate the size of a ping.
    *
@@ -161,7 +161,7 @@ export class PioneerUtils {
     this.setupEncrypter();
     return await this.encrypter.encrypt(data);
   }
-  
+
   /**
    * Constructs a payload object with encrypted data.
    *
@@ -180,7 +180,7 @@ export class PioneerUtils {
   async buildEncryptedPayload(schemaName, schemaVersion, data) {
     const pk = this.getPublicKey();
 
-    const payload = {
+    return {
       encryptedData: await this.encryptData(JSON.stringify(data)),
       encryptionKeyId: pk.id,
       pioneerId: this.getPioneerId(),
@@ -189,7 +189,7 @@ export class PioneerUtils {
       schemaVersion,
     };
   }
-  
+
   /**
    * Calculate the size of a ping that has Pioneer encrypted data.
    *
