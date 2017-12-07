@@ -135,6 +135,24 @@ export class PioneerUtils {
   }
 
   /**
+   * Calculate the size of a ping.
+   *
+   * @param {Object} payload
+   *   The data payload of the ping.
+   *
+   * @returns {Number}
+   *   The total size of the ping.
+   */
+  getPingSize(payload) {
+    const converter = Cc["@mozilla.org/intl/scriptableunicodeconverter"]
+      .createInstance(Ci.nsIScriptableUnicodeConverter);
+    converter.charset = "UTF-8";
+    let utf8Payload = converter.ConvertFromUnicode(JSON.stringify(payload));
+    utf8Payload += converter.Finish();
+    return utf8Payload.length;
+  }
+
+  /**
    * @private
    * @param {String} data The data to encrypt
    * @returns {String}
@@ -142,6 +160,55 @@ export class PioneerUtils {
   async encryptData(data) {
     this.setupEncrypter();
     return await this.encrypter.encrypt(data);
+  }
+
+  /**
+   * Constructs a payload object with encrypted data.
+   *
+   * @param {String} schemaName
+   *   The name of the schema to be used for validation.
+   *
+   * @param {int} schemaVersion
+   *   The version of the schema to be used for validation.
+   *
+   * @param {Object} data
+   *   An object containing data to be encrypted and submitted.
+   *
+   * @returns {Object}
+   *   A Telemetry payload object with the encrypted data.
+   */
+  async buildEncryptedPayload(schemaName, schemaVersion, data) {
+    const pk = this.getPublicKey();
+
+    return {
+      encryptedData: await this.encryptData(JSON.stringify(data)),
+      encryptionKeyId: pk.id,
+      pioneerId: this.getPioneerId(),
+      studyName: this.config.studyName,
+      schemaName,
+      schemaVersion,
+    };
+  }
+
+  /**
+   * Calculate the size of a ping that has Pioneer encrypted data.
+   *
+   * @param {String} schemaName
+   *   The name of the schema to be used for validation.
+   *
+   * @param {int} schemaVersion
+   *   The version of the schema to be used for validation.
+   *
+   * @param {Object} data
+   *   An object containing data to be encrypted and submitted.
+   *
+   * @returns {Number}
+   *   The total size of the ping.
+   */
+  async getEncryptedPingSize(schemaName, schemaVersion, data) {
+    return this.getPingSize(
+      await this.buildEncryptedPayload(schemaName, schemaVersion, data)
+    );
   }
 
   /**
@@ -173,16 +240,7 @@ export class PioneerUtils {
       return null;
     }
 
-    const pk = this.getPublicKey();
-
-    const payload = {
-      encryptedData: await this.encryptData(JSON.stringify(data)),
-      encryptionKeyId: pk.id,
-      pioneerId: this.getPioneerId(),
-      studyName: this.config.studyName,
-      schemaName,
-      schemaVersion,
-    };
+    const payload = await this.buildEncryptedPayload(schemaName, schemaVersion, data);
 
     const telOptions = {
       addClientId: true,
