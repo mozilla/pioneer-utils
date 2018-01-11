@@ -255,8 +255,7 @@ export class PioneerUtils {
    * @returns An object from `config.branches`, chosen based on a `weight` key.
    */
   async chooseBranch() {
-    const pioneerId = await this.getPioneerId();
-    const hashKey = `${this.config.studyName}/${pioneerId}`;
+    const hashKey = `${this.config.studyName}/${this.getPioneerId()}`;
     return sampling.chooseWeighted(this.config.branches, hashKey);
   }
 
