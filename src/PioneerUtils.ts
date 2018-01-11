@@ -256,7 +256,7 @@ export class PioneerUtils {
    */
   async chooseBranch() {
     const pioneerId = await this.getPioneerId();
-    const hashKey = `${this.config.studyName}/${this.getPioneerId()}`;
+    const hashKey = `${this.config.studyName}/${pioneerId}`;
     return sampling.chooseWeighted(this.config.branches, hashKey);
   }
 
