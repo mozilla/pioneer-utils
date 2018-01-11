@@ -45,7 +45,7 @@ export async function chooseWeighted(
       return opt;
     }
   }
-  throw new Error("Assertion error, Did not chose a value");
+  throw new Error("Assertion error, did not choose a value");
 }
 
 /**
