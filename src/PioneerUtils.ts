@@ -36,10 +36,7 @@ joseSetCrypto(crypto);
 
 export interface Config {
   /** Unique name of the study. */
-  studyName: string,
-
-  /** The ID of the study add-on */
-  addonId: string,
+  studyName: string;
 
   /** Optional. Which telemetry environment to send data to. */
   telemetryEnv?: "prod" | "stage";
@@ -48,7 +45,7 @@ export interface Config {
    * Branches of the experiment. If useful, you may store extra
    * data on each branch. It will be included when choosing a branch
    */
-  branches: Array<WeightedBranch>,
+  branches: Array<WeightedBranch>;
 
   /**
    * If this is set to true, PioneerUtils enables extra logging and
@@ -69,11 +66,13 @@ export class PioneerUtils {
   private config: Config;
   private encrypter: IEncrypter | null;
   private _logger: Logger | null;
+  private bootstrapData: BootstrapData;
 
-  constructor(config: Config) {
+  constructor(reason: number, data: BootstrapData, config: Config) {
     this.config = config;
     this.encrypter = null;
     this._logger = null;
+    this.bootstrapData = data;
   }
 
   /**
@@ -276,11 +275,11 @@ export class PioneerUtils {
    * Uninstalls the study addon.
    */
   async uninstall(): Promise<void> {
-    const addon = await AddonManager.getAddonByID(this.config.addonId);
+    const addon = await AddonManager.getAddonByID(this.bootstrapData.id);
     if (addon) {
       addon.uninstall();
     } else {
-      throw new Error(`Could not find addon with ID: ${this.config.addonId}`);
+      throw new Error(`Could not find addon with ID: ${this.bootstrapData.id}`);
     }
   }
 

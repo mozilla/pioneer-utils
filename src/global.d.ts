@@ -108,3 +108,41 @@ declare interface Logger {
   debug(message: string, params?: LogParameters): void;
   trace(message: string, params?: LogParameters): void;
 }
+
+declare interface nsIFile { }
+
+declare interface nsIURI { }
+
+declare interface BootstrapData {
+  /** The ID of the add-on being bootstrapped. */
+  id: string;
+
+  /** The version of the add-on being bootstrapped. */
+  version: string;
+
+  /**
+   * The installation location of the add-on being bootstrapped. This
+   * may be a directory or an XPI file depending on whether the add-on
+   * is installed unpacked or not.
+   */
+  installPath: nsIFile;
+
+  /**
+   * A URI pointing at the root of the add-ons files, this may be a
+   * jar: or file: URI depending on whether the add-on is installed
+   * unpacked or not.
+   */
+  resourceURI: nsIURI;
+
+  /**
+   * The previously installed version, if the reason is ADDON_UPGRADE
+   * or ADDON_DOWNGRADE, and the method is install or startup.
+   */
+  oldVersion?: string;
+
+  /**
+   * The version to be installed, if the reason is ADDON_UPGRADE or
+   * ADDON_DOWNGRADE, and the method is shutdown or uninstall.
+   */
+  newVersion?: string;
+}
